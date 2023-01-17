@@ -1,23 +1,11 @@
-# syntax=docker/dockerfile:1
+FROM golang:1.18 AS builder
 
-FROM alpine:3.6
+RUN mkdir /app
+ADD . /app
+WORKDIR /app
 
-# You can change Pocketbase version here
-ARG POCKETBASE_VERSION=0.11.2
+RUN CGO_ENABLED=0 GOOS=linux go build -o my_app ./main.go
 
-# Install the dependencies
-RUN apk add --no-cache \
-    ca-certificates \
-    unzip \
-    wget \
-    zip \
-    zlib-dev \
-    bash
-
-# Download Pocketbase
-ADD https://github.com/pocketbase/pocketbase/releases/download/v${POCKETBASE_VERSION}/pocketbase_${POCKETBASE_VERSION}_linux_amd64.zip /tmp/pocketbase.zip
-RUN unzip /tmp/pocketbase.zip -d /usr/local/bin
-RUN chmod +x /usr/local/bin/pocketbase
-
-# Start Pocketbase
-CMD [ "/usr/local/bin/pocketbase", "serve", "--http=0.0.0.0:5000", "--dir=/pb_data", "--publicDir=/pb_public" ]
+FROM alpine:latest AS production
+COPY --from=builder /app .
+CMD ["./my_app", "serve", "--http", "0.0.0.0:5000",  "--dir=/pb_data", "--publicDir=/pb_public"]
