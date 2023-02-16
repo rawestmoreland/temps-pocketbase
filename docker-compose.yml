@@ -1,0 +1,9 @@
+version: '3.7'
+
+services:
+  pocketbase:
+    image: rawestmoreland/temps-pocketbase-framework:latest
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./data:/pb_data
